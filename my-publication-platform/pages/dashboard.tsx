@@ -4,6 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import styles from "./dashboard.module.css";
 import { formatDistanceToNow } from "date-fns";
 import { cs } from "date-fns/locale";
+import Email from "next-auth/providers/email";
 
 declare module "next-auth" {
   interface Session {
@@ -42,12 +43,14 @@ export default function Dashboard() {
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editedCommentText, setEditedCommentText] = useState("");
   const [likeCounts, setLikeCounts] = useState<{ [contentId: number]: number }>({});
+  const [currentUser, setCurrentUser] = useState({ email: "user@example.com" });
 
 
   const fetchContents = async () => {
     try {
       const res = await axios.get("/api/content");
       console.log("Fetched contents:", res.data);  
+      console.log("SD", currentUser);
       setContents(res.data);  // Uložení obsahu
   
       // Získání počtu liků pro každý obsah
@@ -250,26 +253,32 @@ export default function Dashboard() {
   const getLikeCount = async (contentId: number) => {
     try {
       const res = await axios.get(`/api/content/getLikeCount/${contentId}`);
-      return res.data.likeCount;  // Předpokládáme, že API vrací počet liků
+      return res.data.likeCount;
     } catch (error) {
       console.error("Error fetching like count:", error);
-      return 0;  // V případě chyby vrátíme 0
+      return 0; 
     }
   };
-  
-  
-  
-  
-  
-  
-  
-  
 
   useEffect(() => {
+    console.log("USERL", currentUser);
+    fetchContents();
+    // Tento log se spustí po každé změně currentUser
+  }, [currentUser]); // Tento efekt bude reagovat na změnu currentUser
+  
+  useEffect(() => {
     if (session) {
-      fetchContents();
+      console.log("SIGMA", currentUser); // Tento log se provede při změně session, ale ukáže starý currentUser, pokud ještě neproběhla jeho změna
+      if (session?.user) {
+        console.log("session");
+        if (session.user.email) {
+          console.log(session.user.email);
+          setCurrentUser({ email: session.user.email });
+        }
+      }
     }
-  }, [session]);
+  }, [session]); // Tento useEffect se spustí, když se změní session
+  
 
   if (!session) {
     return (
@@ -337,6 +346,7 @@ export default function Dashboard() {
     <div className={styles.container}>
     <div className={styles.menu}>
       <h1 className={styles.heading}>Dashboard</h1>
+      <p>Hello, {currentUser.email}</p>
       <button className={styles.button} onClick={() => signOut()}>Logout</button>
     </div>
     
@@ -385,12 +395,16 @@ export default function Dashboard() {
           <p className={styles.contentBody}>{content.body}</p>
           <div className={styles.buttonss}>
             <button className={styles.button} onClick={() => handleToggleLike(content.id)}>{likeCounts[content.id] || 0} 👍</button>
-            <button className={styles.buttonDelete} onClick={() => handleDelete(content.id)}>🗑️</button>
-            <button className={styles.buttonEdit} onClick={() => { 
-              setEditingContentId(content.id); 
-              setEditedContentTitle(content.title); 
-              setEditedContentBody(content.body); 
-            }}>✏️</button>
+            {(content.user.email === currentUser.email || currentUser.email === "dev@dev.com") && (
+              <>
+                <button className={styles.buttonDelete} onClick={() => handleDelete(content.id)}>🗑️</button>
+                <button className={styles.buttonEdit} onClick={() => { 
+                  setEditingContentId(content.id); 
+                  setEditedContentTitle(content.title); 
+                  setEditedContentBody(content.body); 
+                }}>✏️</button>
+              </>
+            )}
           </div>
         </>
       )}
@@ -418,8 +432,12 @@ export default function Dashboard() {
                 <small className={styles.timestamp}>
                   {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: cs })}
                 </small>
-                <button className={styles.buttonComm} onClick={() => handleDeleteComment(comment.id)}>🗑️</button>
-                <button className={styles.buttonComm} onClick={() => { setEditingCommentId(comment.id); setEditedCommentText(comment.text); }}>✎</button>
+                {(comment.user.email === currentUser.email || currentUser.email === "dev@dev.com") && (
+                  <>
+                    <button className={styles.buttonComm} onClick={() => handleDeleteComment(comment.id)}>🗑️</button>
+                    <button className={styles.buttonComm} onClick={() => { setEditingCommentId(comment.id); setEditedCommentText(comment.text); }}>✎</button>
+                  </>
+                )}
               </>
             )}
           </li>
