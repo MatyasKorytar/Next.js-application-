@@ -17,6 +17,7 @@ export default function Dashboard() {
     title: string;
     body: string;
     comments: Comment[];
+    user: { name: string; email: string };
   }
 
   interface Comment {
@@ -58,43 +59,41 @@ export default function Dashboard() {
       console.error("Error fetching contents:", error);
     }
   };
-  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-   
-    if (!session) {
-      console.log('No session found');
-    }
-    
-    if (session && !session.accessToken) {
-      console.log('No access token found in session');
-    }
-    
-    console.log('Session:', session);
-    
-    try {
-      const response = await axios.post(
-        "/api/content/create", 
-        { title, body },
-        {
-          withCredentials: true,  
-          headers: session && session.accessToken ? {
-            Authorization: `Bearer ${session.accessToken}`, 
-          } : {},
-        }
-      );
   
-      console.log("Content created successfully:", response.data);
   
-     
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault(); // Zabráníme defaultnímu chování formuláře (reload stránky)
+
+    if (!title || !body) {
+      console.error("Title and body are required");
+      return;
+    }
+
+    const token = session?.accessToken;
+    const userId = session?.user.id;
+
+    const response = await fetch("/api/content/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title, body, token, userId }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log("Content created successfully:", result);
+      // Po úspěšném odeslání můžeme třeba vymazat formulář nebo přesměrovat uživatele
       setTitle("");
       setBody("");
-      fetchContents()
-    } catch (error) {
-      console.error("Error creating content:", error);
-      alert("Failed to create content. Please check the console for errors.");
+      fetchContents();
+    } else {
+      const errorResult = await response.json();
+      console.error("Error creating content:", errorResult.message);
     }
   };
+  
 
 
   const handleAddComment = async (contentId: number, text: string) => {
@@ -113,6 +112,7 @@ export default function Dashboard() {
   
     if (res.ok) {
       console.log("Komentář přidán");
+      fetchContents();
     } else {
       console.error("Chyba při přidávání komentáře");
     }
@@ -128,7 +128,7 @@ export default function Dashboard() {
   
       if (res.ok) {
         console.log("Komentář smazán");
-        fetchContents(); // Aktualizuje obsah po smazání
+        fetchContents(); 
       } else {
         console.error("Chyba při mazání komentáře");
       }
@@ -150,7 +150,7 @@ export default function Dashboard() {
   
       if (res.ok) {
         console.log("Komentář upraven");
-        fetchContents(); // Znovu načte obsah po úpravě
+        fetchContents();
       } else {
         console.error("Chyba při úpravě komentáře");
       }
@@ -214,6 +214,7 @@ export default function Dashboard() {
   
     if (res.ok) {
       console.log("Like toggled");
+      fetchContents();
     } else {
       console.error("Chyba při přepínání liku");
     }
@@ -335,6 +336,7 @@ export default function Dashboard() {
       {contents.map((content) => (
         <li key={content.id} className={styles.contentItem}>
           <h3 className={styles.contentTitle}>{content.title}</h3>
+          <p className={styles.contentAutor}>{content.user.email}</p>
           <p className={styles.contentBody}>{content.body}</p>
           <div className={styles.buttonss}>
             <button className={styles.button} onClick={() => handleDelete(content.id)}>🗑️</button>
