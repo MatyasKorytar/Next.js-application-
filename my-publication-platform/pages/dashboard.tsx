@@ -190,21 +190,29 @@ export default function Dashboard() {
   };
   
 
-  const handleDelete = async (id: number) => {
-    if (!session) {
-      alert("You must be logged in to delete content.");
-      return;
-    }
-  
+  const handleDeleteContent = async (contentId: number) => {
+    console.log("Trying to delete content with ID:", contentId);
+    
     try {
-      console.log("Deleting ID:", {id});
-      await axios.delete(`/api/content/delete/${id}`);
-      setContents((prevContents) => prevContents.filter((content) => content.id !== id));
+      const res = await fetch(`/api/content/delete/${contentId}`, {
+        method: "DELETE",
+      });
+  
+      if (res.ok) {
+        console.log("Content deleted successfully");
+        // Po úspěšném smazání, znovu načti obsah nebo proveď jinou akci
+        fetchContents();
+      } else {
+        const data = await res.json();
+        console.error("Error deleting content:", data.message || "Unknown error");
+      }
     } catch (error) {
-      console.error("Error deleting content:", error);
-      alert("Failed to delete content.");
+      console.error("Error communicating with API:", error);
     }
   };
+  
+  
+  
   
   
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -307,7 +315,7 @@ export default function Dashboard() {
             </form>
             <p  className={styles.signin}>
               Already have an account?{" "}
-              <button className={styles.button} onClick={() => setIsRegistering(false)}>Login here</button>
+              <button className={styles.buttonSmall} onClick={() => setIsRegistering(false)}>Login here</button>
             </p>
           </>
         ) : (
@@ -397,7 +405,7 @@ export default function Dashboard() {
             <button className={styles.button} onClick={() => handleToggleLike(content.id)}>{likeCounts[content.id] || 0} 👍</button>
             {(content.user.email === currentUser.email || currentUser.email === "dev@dev.com") && (
               <>
-                <button className={styles.buttonDelete} onClick={() => handleDelete(content.id)}>🗑️</button>
+                <button className={styles.buttonDelete} onClick={() => handleDeleteContent(content.id)}>🗑️</button>
                 <button className={styles.buttonEdit} onClick={() => { 
                   setEditingContentId(content.id); 
                   setEditedContentTitle(content.title); 
