@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { signIn, signOut, useSession } from "next-auth/react";
+import styles from "./dashboard.module.css";
+import { formatDistanceToNow } from "date-fns";
+import { cs } from "date-fns/locale";
 
 declare module "next-auth" {
   interface Session {
@@ -242,10 +245,10 @@ export default function Dashboard() {
 
   if (!session) {
     return (
-      <div>
+      <div className={styles.login}>
         {isRegistering ? (
           <>
-            <h1>Register</h1>
+            <h1 className={styles.Sign}>Register</h1>
             <form onSubmit={handleRegister}>
               <input
                 type="text"
@@ -253,6 +256,7 @@ export default function Dashboard() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                className={styles.input}
               />
               <input
                 type="password"
@@ -260,17 +264,18 @@ export default function Dashboard() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className={styles.input}
               />
-              <button type="submit">Register</button>
+              <button className={styles.button}  type="submit">Register</button>
             </form>
-            <p>
+            <p  className={styles.signin}>
               Already have an account?{" "}
-              <button onClick={() => setIsRegistering(false)}>Login here</button>
+              <button className={styles.button} onClick={() => setIsRegistering(false)}>Login here</button>
             </p>
           </>
         ) : (
           <>
-            <h1>Login</h1>
+            <h1 className={styles.Sign}>Login</h1>
             <form onSubmit={handleLogin}>
               <input
                 type="text"
@@ -278,6 +283,7 @@ export default function Dashboard() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                className={styles.input}
               />
               <input
                 type="password"
@@ -285,12 +291,13 @@ export default function Dashboard() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className={styles.input}
               />
-              <button type="submit">Login</button>
+              <button className={styles.button} type="submit">Login</button>
             </form>
-            <p>
+            <p className={styles.signin}>
               Don't have an account?{" "}
-              <button onClick={() => setIsRegistering(true)}>Register here</button>
+              <button className={styles.buttonSmall} onClick={() => setIsRegistering(true)}>Register here</button>
             </p>
           </>
         )}
@@ -299,65 +306,74 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <button onClick={() => signOut()}>Logout</button>
-      <form onSubmit={handleCreate}>
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-        <textarea
-          placeholder="Body"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          required
-        />
-        <button type="submit">Create</button>
-      </form>
-      <h2>Contents</h2>
-      <ul>
-        {contents.map((content) => (
-          <li key={content.id}>
-            <h3>{content.title}</h3>
-            <p>{content.body}</p>
-            <p>{content.id}</p>
-            <button onClick={() => handleDelete(content.id)}>Delete</button>
-            <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} />
-            <button onClick={() => handleAddComment(content.id, newComment)}>Přidat komentář</button>
-            <ul>
-              {content.comments.map((comment) => (
-                <li key={comment.id}>
-                    <strong>{comment.user.email}:</strong>
-                    {editingCommentId === comment.id ? (
-                      <>
-                        <input
-                          type="text"
-                          value={editedCommentText}
-                          onChange={(e) => setEditedCommentText(e.target.value)}
-                        />
-                        <button onClick={() => handleEditComment(comment.id, editedCommentText)}>Uložit</button>
-                        <button onClick={() => setEditingCommentId(null)}>Zrušit</button>
-                      </>
-                    ) : (
-                      <>
-                        {comment.text}
-                        <small> {new Date(comment.createdAt).toLocaleString()}</small>
-                        <button onClick={() => handleDeleteComment(comment.id)}>Smazat</button>
-                        <button onClick={() => { setEditingCommentId(comment.id); setEditedCommentText(comment.text); }}>Upravit</button>
-                        <button onClick={() => handleToggleLike(content.id)}>👍 Like</button> 
-                        <p>Počet liků: {likeCounts[content.id] || 0}</p>
-                      </>
-                    )}
-              </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
+    <div className={styles.container}>
+    <div className={styles.menu}>
+      <h1 className={styles.heading}>Dashboard</h1>
+      <button className={styles.button} onClick={() => signOut()}>Logout</button>
     </div>
+    
+    <form className={styles.form} onSubmit={handleCreate}>
+      <input
+        type="text"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+        className={styles.input}
+      />
+      <textarea
+        placeholder="Body"
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        required
+        className={styles.textarea}
+      />
+      <button type="submit" className={styles.button}>Add post</button>
+    </form>
+
+    <ul className={styles.contentList}>
+      {contents.map((content) => (
+        <li key={content.id} className={styles.contentItem}>
+          <h3 className={styles.contentTitle}>{content.title}</h3>
+          <p className={styles.contentBody}>{content.body}</p>
+          <div className={styles.buttonss}>
+            <button className={styles.button} onClick={() => handleDelete(content.id)}>🗑️</button>
+            <button className={styles.button} onClick={() => handleToggleLike(content.id)}>{likeCounts[content.id] || 0} 👍</button> 
+          </div>
+          <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} className={styles.input} />
+          <button className={styles.button} onClick={() => handleAddComment(content.id, newComment)}>➕</button>
+          
+          <ul className={styles.commentList}>
+            {content.comments.map((comment) => (
+              <li key={comment.id} className={styles.commentItem}>
+                <strong>{comment.user.email}:</strong>
+                {editingCommentId === comment.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editedCommentText}
+                      onChange={(e) => setEditedCommentText(e.target.value)}
+                      className={styles.input}
+                    />
+                    <button className={styles.buttonComm} onClick={() => handleEditComment(comment.id, editedCommentText)}>✅</button>
+                    <button className={styles.buttonComm} onClick={() => setEditingCommentId(null)}>❌</button>
+                  </>
+                ) : (
+                <>
+                  { " " + comment.text}
+                  <small className={styles.timestamp}>
+                    {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: cs })}
+                  </small>
+                  <button className={styles.buttonComm} onClick={() => handleDeleteComment(comment.id)}>🗑️</button>
+                  <button className={styles.buttonComm} onClick={() => { setEditingCommentId(comment.id); setEditedCommentText(comment.text); }}>✎</button>
+                </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  </div>
   );
 }
