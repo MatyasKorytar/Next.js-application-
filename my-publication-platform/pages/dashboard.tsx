@@ -36,6 +36,9 @@ export default function Dashboard() {
   const [isRegistering, setIsRegistering] = useState(false);
   const { data: session } = useSession();
   const [newComment, setNewComment] = useState("");
+  const [editedContentTitle, setEditedContentTitle] = useState("");
+  const [editedContentBody, setEditedContentBody] = useState("");
+  const [editingContentId, setEditingContentId] = useState<number | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editedCommentText, setEditedCommentText] = useState("");
   const [likeCounts, setLikeCounts] = useState<{ [contentId: number]: number }>({});
@@ -91,6 +94,29 @@ export default function Dashboard() {
     } else {
       const errorResult = await response.json();
       console.error("Error creating content:", errorResult.message);
+    }
+  };
+  
+
+  const handleEditContent = async (contentId: number, newTitle: string, newBody: string) => {
+    console.log("Editing content:", { contentId, newTitle, newBody });
+  
+    try {
+      const res = await fetch(`/api/content/update/${contentId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle, body: newBody }),
+      });
+  
+      if (res.ok) {
+        console.log("Content updated");
+        fetchContents(); 
+        window.location.reload();
+      } else {
+        console.error("Chyba při úpravě obsahu");
+      }
+    } catch (error) {
+      console.error("Chyba při komunikaci s API:", error);
     }
   };
   
@@ -151,6 +177,7 @@ export default function Dashboard() {
       if (res.ok) {
         console.log("Komentář upraven");
         fetchContents();
+        window.location.reload();
       } else {
         console.error("Chyba při úpravě komentáře");
       }
@@ -333,49 +360,76 @@ export default function Dashboard() {
     </form>
 
     <ul className={styles.contentList}>
-      {contents.map((content) => (
-        <li key={content.id} className={styles.contentItem}>
+  {contents.map((content) => (
+    <li key={content.id} className={styles.contentItem}>
+      {editingContentId === content.id ? (
+        <>
+          <input
+            type="text"
+            value={editedContentTitle}
+            onChange={(e) => setEditedContentTitle(e.target.value)}
+            className={styles.input}
+          />
+          <textarea
+            value={editedContentBody}
+            onChange={(e) => setEditedContentBody(e.target.value)}
+            className={styles.input}
+          />
+          <button className={styles.button} onClick={() => handleEditContent(content.id, editedContentTitle, editedContentBody)}>✅</button>
+          <button className={styles.button} onClick={() => setEditingContentId(null)}>❌</button>
+        </>
+      ) : (
+        <>
           <h3 className={styles.contentTitle}>{content.title}</h3>
           <p className={styles.contentAutor}>{content.user.email}</p>
           <p className={styles.contentBody}>{content.body}</p>
           <div className={styles.buttonss}>
             <button className={styles.button} onClick={() => handleDelete(content.id)}>🗑️</button>
-            <button className={styles.button} onClick={() => handleToggleLike(content.id)}>{likeCounts[content.id] || 0} 👍</button> 
+            <button className={styles.button} onClick={() => handleToggleLike(content.id)}>{likeCounts[content.id] || 0} 👍</button>
+            <button className={styles.button} onClick={() => { 
+              setEditingContentId(content.id); 
+              setEditedContentTitle(content.title); 
+              setEditedContentBody(content.body); 
+            }}>✏️ Edit</button>
           </div>
-          <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} className={styles.input} />
-          <button className={styles.button} onClick={() => handleAddComment(content.id, newComment)}>➕</button>
-          
-          <ul className={styles.commentList}>
-            {content.comments.map((comment) => (
-              <li key={comment.id} className={styles.commentItem}>
-                <strong>{comment.user.email}:</strong>
-                {editingCommentId === comment.id ? (
-                  <>
-                    <input
-                      type="text"
-                      value={editedCommentText}
-                      onChange={(e) => setEditedCommentText(e.target.value)}
-                      className={styles.input}
-                    />
-                    <button className={styles.buttonComm} onClick={() => handleEditComment(comment.id, editedCommentText)}>✅</button>
-                    <button className={styles.buttonComm} onClick={() => setEditingCommentId(null)}>❌</button>
-                  </>
-                ) : (
-                <>
-                  { " " + comment.text}
-                  <small className={styles.timestamp}>
-                    {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: cs })}
-                  </small>
-                  <button className={styles.buttonComm} onClick={() => handleDeleteComment(comment.id)}>🗑️</button>
-                  <button className={styles.buttonComm} onClick={() => { setEditingCommentId(comment.id); setEditedCommentText(comment.text); }}>✎</button>
-                </>
-                )}
-              </li>
-            ))}
-          </ul>
-        </li>
-      ))}
-    </ul>
+        </>
+      )}
+      <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} className={styles.input} />
+      <button className={styles.button} onClick={() => handleAddComment(content.id, newComment)}>➕</button>
+      
+      <ul className={styles.commentList}>
+        {content.comments.map((comment) => (
+          <li key={comment.id} className={styles.commentItem}>
+            <strong>{comment.user.email}:</strong>
+            {editingCommentId === comment.id ? (
+              <>
+                <input
+                  type="text"
+                  value={editedCommentText}
+                  onChange={(e) => setEditedCommentText(e.target.value)}
+                  className={styles.input}
+                />
+                <button className={styles.buttonComm} onClick={() => handleEditComment(comment.id, editedCommentText)}>✅</button>
+                <button className={styles.buttonComm} onClick={() => setEditingCommentId(null)}>❌</button>
+              </>
+            ) : (
+              <>
+                {" " + comment.text}
+                <small className={styles.timestamp}>
+                  {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: cs })}
+                </small>
+                <button className={styles.buttonComm} onClick={() => handleDeleteComment(comment.id)}>🗑️</button>
+                <button className={styles.buttonComm} onClick={() => { setEditingCommentId(comment.id); setEditedCommentText(comment.text); }}>✎</button>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </li>
+  ))}
+</ul>
+
+
   </div>
   );
 }
