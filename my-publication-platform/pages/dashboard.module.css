@@ -211,3 +211,29 @@ body {
     margin-right: -1rem;
     background-color: rgb(241, 195, 163);
 }
+
+.buttonDelete {
+    display: inline-block;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 2px 5px;
+    color: white;
+    background-color: red;
+}
+
+.buttonEdit {
+    display: inline-block;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 2px 5px;
+    color: white;
+    background-color: rgb(118, 118, 186);
+}
+
+.buttonDelete:hover {
+    background-color: rgba(2, 30, 9);
+}
+
+.buttonEdit:hover {
+    background-color: rgba(2, 30, 9);
+}

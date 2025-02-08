@@ -384,13 +384,13 @@ export default function Dashboard() {
           <p className={styles.contentAutor}>{content.user.email}</p>
           <p className={styles.contentBody}>{content.body}</p>
           <div className={styles.buttonss}>
-            <button className={styles.button} onClick={() => handleDelete(content.id)}>🗑️</button>
             <button className={styles.button} onClick={() => handleToggleLike(content.id)}>{likeCounts[content.id] || 0} 👍</button>
-            <button className={styles.button} onClick={() => { 
+            <button className={styles.buttonDelete} onClick={() => handleDelete(content.id)}>🗑️</button>
+            <button className={styles.buttonEdit} onClick={() => { 
               setEditingContentId(content.id); 
               setEditedContentTitle(content.title); 
               setEditedContentBody(content.body); 
-            }}>✏️ Edit</button>
+            }}>✏️</button>
           </div>
         </>
       )}
