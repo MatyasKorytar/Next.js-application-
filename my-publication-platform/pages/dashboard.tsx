@@ -353,6 +353,7 @@ export default function Dashboard() {
   }
 
   return (
+    <div className={styles.page}>
         <div className={styles.container}>
         <div className={styles.menu}>
             <div className={styles.usermenu}>
@@ -488,6 +489,7 @@ export default function Dashboard() {
         </li>
       ))}
     </ul>
+  </div>
   </div>
   );
 
