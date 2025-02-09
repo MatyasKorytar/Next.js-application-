@@ -18,20 +18,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Zkusme si lognout hodnoty před smazáním
+
     const contentId = parseInt(id as string);
     console.log("Parsed contentId:", contentId);
+  
 
-    // Provést smazání
     const deletedContent = await prisma.content.delete({
       where: { id: contentId },
     });
-
+  
     console.log("Deleted content:", deletedContent);
-
+  
     res.status(200).json({ message: "Content deleted successfully", deletedContent });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error deleting content:", error);
-    res.status(500).json({ message: "Error deleting content", error: (error as any).message });
+  
+
+    if (error instanceof Error) {
+      res.status(500).json({ message: "Error deleting content", error: error.message });
+    } else {
+      res.status(500).json({ message: "Error deleting content", error: "Unknown error" });
+    }
   }
 }

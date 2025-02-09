@@ -1,7 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { getSession } from "next-auth/react";
 import { NextApiRequest, NextApiResponse } from "next";
-import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
@@ -19,11 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   console.log("create")
   try{
-
-    
-
- 
-    const comment = await prisma.comment.create({
+    await prisma.comment.create({
       data: {
         contentId,
         userId: parseInt(userId),

@@ -4,7 +4,6 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import styles from "./dashboard.module.css";
 import { formatDistanceToNow } from "date-fns";
 import { cs } from "date-fns/locale";
-import Email from "next-auth/providers/email";
 
 declare module "next-auth" {
   interface Session {
@@ -36,7 +35,7 @@ export default function Dashboard() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
-  const { data: session } = useSession();
+  const { data: session } = useSession() || {};
   const [newComment, setNewComment] = useState("");
   const [editedContentTitle, setEditedContentTitle] = useState("");
   const [editedContentBody, setEditedContentBody] = useState("");
@@ -57,7 +56,7 @@ export default function Dashboard() {
       setContents(res.data); 
   
       const likeCountsData: { [contentId: number]: number } = {};
-      for (let content of res.data) {
+      for (const content of res.data) { 
         const likeCount = await getLikeCount(content.id);
         likeCountsData[content.id] = likeCount;
       }
@@ -343,7 +342,7 @@ export default function Dashboard() {
               <button className={styles.button} type="submit">Login</button>
             </form>
             <p className={styles.signin}>
-              Don't have an account?{" "}
+              Do not have an account?{" "}
               <button className={styles.buttonSmall} onClick={() => setIsRegistering(true)}>Register here</button>
             </p>
           </>
