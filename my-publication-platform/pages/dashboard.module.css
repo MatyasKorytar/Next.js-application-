@@ -71,11 +71,11 @@ body {
     flex-direction: column;
     gap: 1rem;
     width: 30%;
-    margin-left: 50%;
     background-color: rgb(245, 230, 213);
     padding: 2rem;
     border: 2px solid black;
     border-radius: 5px;
+    margin-left: 2rem;
 }
 
 .form input {
@@ -132,6 +132,29 @@ body {
     font-weight: bold;
 }
 
+.usermenu {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    background-color: beige;
+    padding: 1rem 6rem;
+    border: 2px solid black;
+    border-left: none;
+    border-right: none;
+    margin-left: -1rem;
+}
+
+.select {
+    border: 3px solid rgb(98, 160, 22);
+    border-radius: 3px;
+
+}
+
+.search {
+    display: flex;
+    margin-left: 2rem;
+}
+
 .comment small {
     color: gray;
 }
@@ -142,7 +165,12 @@ body {
 
 .menu {
     display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
     background-color: rgb(255, 255, 255);
+    margin-bottom: 1rem;
 }
 
 .contentList {
@@ -197,6 +225,12 @@ body {
 .timestamp {
     padding: 15px;
     color: gray;
+}
+
+.timestampContent {
+    opacity: 70%;
+    padding: 5px;
+    margin-left: 17rem;
 }
 
 .contentAutor {

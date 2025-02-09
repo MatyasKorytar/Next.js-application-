@@ -18,6 +18,7 @@ export default function Dashboard() {
     title: string;
     body: string;
     comments: Comment[];
+    createdAt: string;
     user: { name: string; email: string };
   }
 
@@ -44,6 +45,8 @@ export default function Dashboard() {
   const [editedCommentText, setEditedCommentText] = useState("");
   const [likeCounts, setLikeCounts] = useState<{ [contentId: number]: number }>({});
   const [currentUser, setCurrentUser] = useState({ email: "user@example.com" });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("likes");
 
 
   const fetchContents = async () => {
@@ -51,16 +54,15 @@ export default function Dashboard() {
       const res = await axios.get("/api/content");
       console.log("Fetched contents:", res.data);  
       console.log("SD", currentUser);
-      setContents(res.data);  // Uložení obsahu
+      setContents(res.data); 
   
-      // Získání počtu liků pro každý obsah
       const likeCountsData: { [contentId: number]: number } = {};
       for (let content of res.data) {
         const likeCount = await getLikeCount(content.id);
         likeCountsData[content.id] = likeCount;
       }
   
-      setLikeCounts(likeCountsData);  // Uložení počtu liků pro každý obsah
+      setLikeCounts(likeCountsData); 
     } catch (error) {
       console.error("Error fetching contents:", error);
     }
@@ -69,7 +71,7 @@ export default function Dashboard() {
   
 
   const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault(); // Zabráníme defaultnímu chování formuláře (reload stránky)
+    e.preventDefault();
 
     if (!title || !body) {
       console.error("Title and body are required");
@@ -90,7 +92,7 @@ export default function Dashboard() {
     if (response.ok) {
       const result = await response.json();
       console.log("Content created successfully:", result);
-      // Po úspěšném odeslání můžeme třeba vymazat formulář nebo přesměrovat uživatele
+
       setTitle("");
       setBody("");
       fetchContents();
@@ -200,7 +202,7 @@ export default function Dashboard() {
   
       if (res.ok) {
         console.log("Content deleted successfully");
-        // Po úspěšném smazání, znovu načti obsah nebo proveď jinou akci
+
         fetchContents();
       } else {
         const data = await res.json();
@@ -271,12 +273,12 @@ export default function Dashboard() {
   useEffect(() => {
     console.log("USERL", currentUser);
     fetchContents();
-    // Tento log se spustí po každé změně currentUser
-  }, [currentUser]); // Tento efekt bude reagovat na změnu currentUser
+
+  }, [currentUser]);
   
   useEffect(() => {
     if (session) {
-      console.log("SIGMA", currentUser); // Tento log se provede při změně session, ale ukáže starý currentUser, pokud ještě neproběhla jeho změna
+      console.log("SIGMA", currentUser); 
       if (session?.user) {
         console.log("session");
         if (session.user.email) {
@@ -285,7 +287,7 @@ export default function Dashboard() {
         }
       }
     }
-  }, [session]); // Tento useEffect se spustí, když se změní session
+  }, [session]); 
   
 
   if (!session) {
@@ -351,111 +353,142 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={styles.container}>
-    <div className={styles.menu}>
-      <h1 className={styles.heading}>Dashboard</h1>
-      <p>Hello, {currentUser.email}</p>
-      <button className={styles.button} onClick={() => signOut()}>Logout</button>
-    </div>
-    
-    <form className={styles.form} onSubmit={handleCreate}>
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-        className={styles.input}
-      />
-      <textarea
-        placeholder="Body"
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        required
-        className={styles.textarea}
-      />
-      <button type="submit" className={styles.button}>Add post</button>
-    </form>
-
-    <ul className={styles.contentList}>
-  {contents.map((content) => (
-    <li key={content.id} className={styles.contentItem}>
-      {editingContentId === content.id ? (
-        <>
-          <input
-            type="text"
-            value={editedContentTitle}
-            onChange={(e) => setEditedContentTitle(e.target.value)}
-            className={styles.input}
-          />
-          <textarea
-            value={editedContentBody}
-            onChange={(e) => setEditedContentBody(e.target.value)}
-            className={styles.input}
-          />
-          <button className={styles.button} onClick={() => handleEditContent(content.id, editedContentTitle, editedContentBody)}>✅</button>
-          <button className={styles.button} onClick={() => setEditingContentId(null)}>❌</button>
-        </>
-      ) : (
-        <>
-          <h3 className={styles.contentTitle}>{content.title}</h3>
-          <p className={styles.contentAutor}>{content.user.email}</p>
-          <p className={styles.contentBody}>{content.body}</p>
-          <div className={styles.buttonss}>
-            <button className={styles.button} onClick={() => handleToggleLike(content.id)}>{likeCounts[content.id] || 0} 👍</button>
-            {(content.user.email === currentUser.email || currentUser.email === "dev@dev.com") && (
-              <>
-                <button className={styles.buttonDelete} onClick={() => handleDeleteContent(content.id)}>🗑️</button>
-                <button className={styles.buttonEdit} onClick={() => { 
-                  setEditingContentId(content.id); 
-                  setEditedContentTitle(content.title); 
-                  setEditedContentBody(content.body); 
-                }}>✏️</button>
-              </>
-            )}
+        <div className={styles.container}>
+        <div className={styles.menu}>
+            <div className={styles.usermenu}>
+                <p>Hello, <strong>{currentUser.email}</strong></p>
+                <button className={styles.button} onClick={() => signOut()}>Logout</button>
           </div>
-        </>
-      )}
-      <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} className={styles.input} />
-      <button className={styles.button} onClick={() => handleAddComment(content.id, newComment)}>➕</button>
+          
+          <form className={styles.form} onSubmit={handleCreate}>
+            <input
+              type="text"
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className={styles.input}
+            />
+            <textarea
+              placeholder="Body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              required
+              className={styles.textarea}
+            />
+            <button type="submit" className={styles.button}>Add post</button>
+          </form>
+        </div>
       
-      <ul className={styles.commentList}>
-        {content.comments.map((comment) => (
-          <li key={comment.id} className={styles.commentItem}>
-            <strong>{comment.user.email}:</strong>
-            {editingCommentId === comment.id ? (
-              <>
+            <div className={styles.search}>
                 <input
-                  type="text"
-                  value={editedCommentText}
-                  onChange={(e) => setEditedCommentText(e.target.value)}
-                  className={styles.input}
-                />
-                <button className={styles.buttonComm} onClick={() => handleEditComment(comment.id, editedCommentText)}>✅</button>
-                <button className={styles.buttonComm} onClick={() => setEditingCommentId(null)}>❌</button>
-              </>
-            ) : (
-              <>
-                {" " + comment.text}
-                <small className={styles.timestamp}>
-                  {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: cs })}
+                      type="text"
+                      placeholder="Search by title..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className={styles.input}
+                    />
+                
+                <select className={styles.select} onChange={(e) => setSortOption(e.target.value)}>
+                  <option value="likes">Most Liked</option>
+                  <option value="comments">Most Commented</option>
+                  <option value="newest">Newest</option>
+                </select>
+            </div>
+
+        <ul className={styles.contentList}>
+      {contents
+        .filter(content => content.title.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => {
+          if (sortOption === "likes") {
+            return (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0);
+          } else if (sortOption === "comments") {
+            return b.comments.length - a.comments.length;
+          } else {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          }
+        })
+        .map((content) => (
+        <li key={content.id} className={styles.contentItem}>
+          {editingContentId === content.id ? (
+            <>
+              <input
+                type="text"
+                value={editedContentTitle}
+                onChange={(e) => setEditedContentTitle(e.target.value)}
+                className={styles.input}
+              />
+              <textarea
+                value={editedContentBody}
+                onChange={(e) => setEditedContentBody(e.target.value)}
+                className={styles.input}
+              />
+              <button className={styles.button} onClick={() => handleEditContent(content.id, editedContentTitle, editedContentBody)}>✅</button>
+              <button className={styles.button} onClick={() => setEditingContentId(null)}>❌</button>
+            </>
+          ) : (
+            <>
+              <h3 className={styles.contentTitle}>{content.title}</h3>
+              <p className={styles.contentAutor}>{content.user.email}                 
+                <small className={styles.timestampContent}>
+                  {formatDistanceToNow(new Date(content.createdAt), { addSuffix: true, locale: cs })}
                 </small>
-                {(comment.user.email === currentUser.email || currentUser.email === "dev@dev.com") && (
+              </p>
+              <p className={styles.contentBody}>{content.body}</p>
+              <div className={styles.buttonss}>
+                <button className={styles.button} onClick={() => handleToggleLike(content.id)}>{likeCounts[content.id] || 0} 👍</button>
+                {(content.user.email === currentUser.email || currentUser.email === "dev@dev.com") && (
                   <>
-                    <button className={styles.buttonComm} onClick={() => handleDeleteComment(comment.id)}>🗑️</button>
-                    <button className={styles.buttonComm} onClick={() => { setEditingCommentId(comment.id); setEditedCommentText(comment.text); }}>✎</button>
+                    <button className={styles.buttonDelete} onClick={() => handleDeleteContent(content.id)}>🗑️</button>
+                    <button className={styles.buttonEdit} onClick={() => { 
+                      setEditingContentId(content.id); 
+                      setEditedContentTitle(content.title); 
+                      setEditedContentBody(content.body); 
+                    }}>✏️</button>
                   </>
                 )}
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
-    </li>
-  ))}
-</ul>
-
-
+              </div>
+            </>
+          )}
+          <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} className={styles.input} />
+          <button className={styles.button} onClick={() => handleAddComment(content.id, newComment)}>➕</button>
+          
+          <ul className={styles.commentList}>
+            {content.comments.map((comment) => (
+              <li key={comment.id} className={styles.commentItem}>
+                <strong>{comment.user.email}:</strong>
+                {editingCommentId === comment.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editedCommentText}
+                      onChange={(e) => setEditedCommentText(e.target.value)}
+                      className={styles.input}
+                    />
+                    <button className={styles.buttonComm} onClick={() => handleEditComment(comment.id, editedCommentText)}>✅</button>
+                    <button className={styles.buttonComm} onClick={() => setEditingCommentId(null)}>❌</button>
+                  </>
+                ) : (
+                  <>
+                    {" " + comment.text}
+                    <small className={styles.timestamp}>
+                      {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: cs })}
+                    </small>
+                    {(comment.user.email === currentUser.email || currentUser.email === "dev@dev.com") && (
+                      <>
+                        <button className={styles.buttonComm} onClick={() => handleDeleteComment(comment.id)}>🗑️</button>
+                        <button className={styles.buttonComm} onClick={() => { setEditingCommentId(comment.id); setEditedCommentText(comment.text); }}>✎</button>
+                      </>
+                    )}
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
   </div>
   );
+
 }
