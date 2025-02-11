@@ -1,4 +1,4 @@
-// pages/api/content/update/content/[id].ts
+
 import { PrismaClient } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { id } = req.query;
-  const { title, body } = req.body;  // Předpokládám, že obsah má "title" a "body"
+  const { title, body } = req.body;  
 
   const contentId = parseInt(id as string);
 

@@ -20,7 +20,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Handle authenticated user
     const session = await getSession({ req });
     if (session && session.accessToken) {
       const content = await prisma.content.create({
@@ -35,7 +34,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: content,
       });
     } else {
-      // Handle unauthenticated user (fallback to userId 1)
       const content = await prisma.content.create({
         data: {
           title,

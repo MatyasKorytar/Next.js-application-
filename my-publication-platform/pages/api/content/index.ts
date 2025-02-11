@@ -11,12 +11,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const contents = await prisma.content.findMany({
       include: {
-        user: true, // Autor obsahu
+        user: true, 
         comments: {
           include: {
-            user: true, // Autor komentáře
+            user: true, 
           },
-          orderBy: { createdAt: "desc" }, // Nejnovější komentáře první
+          orderBy: { createdAt: "desc" }, 
         },
       },
       orderBy: { createdAt: "desc" },

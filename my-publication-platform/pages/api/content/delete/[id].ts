@@ -8,7 +8,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // Získání ID obsahu z URL parametru
   const { id } = req.query;
 
   console.log("Received DELETE request for contentId:", id);

@@ -14,14 +14,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Získání počtu liků pro daný obsah
     const likeCount = await prisma.like.count({
       where: {
         contentId: parseInt(contentId),
       },
     });
 
-    // Odeslání odpovědi s počtem liků
     res.status(200).json({ likeCount });
   } catch (error) {
     console.error("Error fetching like count:", error);

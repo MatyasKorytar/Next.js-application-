@@ -32,35 +32,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   res.status(200).json({ message: "createComment" });
 
-//   console.log("session", session)
-//   if (!session) {
-//     return res.status(401).json({ message: "Unauthorized" });
-//   }
-
-//   console.log("Request Method:", req.method);
-//   console.log("Session in API:", session);
-//   const accessToken = session.accessToken;
-
-//   try {
-//     const { contentId, text } = req.body;
- 
-
-//     const comment = await prisma.comment.create({
-//       data: {
-//         contentId,
-//         userId: Number(session.user.id), // Přidáme ID přihlášeného uživatele
-//         text,
-//       },
-//       include: {
-//         user: true, // Vrátíme i email uživatele
-//       },
-//     });
-
-
-//   return res.status(200).json({ message: `createComment with token ${ accessToken}` });
-//   } catch (error) {
-//     console.error("Error adding comment:", error);
-//   }
-// }
-
 }

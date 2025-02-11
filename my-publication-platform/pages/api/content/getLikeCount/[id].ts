@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { id } = req.query;  // Získání `contentId` z URL parametru
+  const { id } = req.query;  
   console.log("Received contentId:", id);
 
   if (!id) {
@@ -16,9 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Předpokládáme, že "Like" je tabulka s liky spojenými s "content"
     const likeCount = await prisma.like.count({
-      where: { contentId: Number(id) },  // Převod id na číslo
+      where: { contentId: Number(id) },  
     });
 
     return res.status(200).json({ likeCount });

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Head from "next/head"; // Import pro komponentu Head
+import Head from "next/head"; 
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +27,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Head>
-          {/* Google Analytics GA4 */}
           <script
             async
             src="https://www.googletagmanager.com/gtag/js?id=G-8QHY7HQKFY"
